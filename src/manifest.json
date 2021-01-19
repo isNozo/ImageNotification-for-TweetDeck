@@ -1,0 +1,10 @@
+{
+    "name": "ImageNotification for TweetDeck",
+    "version": "0.0",
+    "description": "A Chrome extension that makes desktop notifications with images on TweetDeck.",
+    "background": {
+        "scripts": ["Elm.js", "background.js"],
+        "persistent": false
+    },
+    "manifest_version": 2
+}
