@@ -8,21 +8,11 @@ app.ports.createNotification.subscribe((data) => {
     console.log(new Date(), data);
 
     let opt = {
-        type : undefined,
+        type : data.ntType,
         title : data.title,
         message : data.message,
         iconUrl : data.iconUrl,
-        imageUrl : undefined
-    };
-
-    if (data.ntType == "basic") {
-        opt.type = "basic";
-    } else if (data.ntType == "image") {
-        opt.type = "image";
-        opt.imageUrl = data.imageUrl;
-    } else {
-        console.error("Notification type is invalid.");
-        return;
+        imageUrl : data.imageUrl
     };
 
     chrome.notifications.create(opt, (id) => {});
