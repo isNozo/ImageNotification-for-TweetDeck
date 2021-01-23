@@ -8,9 +8,7 @@ main =
         , subscriptions = subscriptions
         }
 
-type alias Model = {}
-type Msg = NoOp
-
+{- Ports -}
 port createNotification : NotificationOptions -> Cmd msg
 
 type alias NotificationOptions =
@@ -21,21 +19,30 @@ type alias NotificationOptions =
     , imageUrl : Maybe String
     }
 
-testNotificationOptions : NotificationOptions
-testNotificationOptions =
-    { ntType = "image"
-    , title = "test title"
-    , message = "test message"
-    , iconUrl = "img/test.png"
-    , imageUrl = Just "img/test.png"
-    }
+{- Model -}
+type alias Model = {}
+
+newModel : Model
+newModel = {}
 
 init : () -> (Model, Cmd Msg)
-init _ = 
-    ({}, createNotification testNotificationOptions)
+init _ =  (newModel, Cmd.none)
+
+{- Update -}
+type Msg 
+    = NoOp
+    | GetNotofication NotificationOptions
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model = ({}, Cmd.none)
+update msg model =
+    case msg of
+        {- There is nothing to do. -}
+        NoOp ->
+            (model, Cmd.none)
+        {- When a notification item is received from the contents script. -}
+        GetNotofication ntOpt ->
+            (model, createNotification ntOpt)
 
+{- Subscriptions -}
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions _ = Sub.none
