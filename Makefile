@@ -1,7 +1,7 @@
 all:
 	mkdir -p app
-	elm make src/Background.elm --output=app/Elm.js
-	cp src/manifest.json src/background.js app/
+	elm make src/*.elm --output=app/Elm.js
+	cp src/manifest.json src/*.js app/
 	cp -r img/ app/
 
 clean:

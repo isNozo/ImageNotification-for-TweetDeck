@@ -1,4 +1,4 @@
-port module Background exposing (..)
+module Content exposing (..)
 
 main : Program () Model Msg
 main =
@@ -8,17 +8,6 @@ main =
         , subscriptions = subscriptions
         }
 
-{- Ports -}
-port createNotification : NotificationOptions -> Cmd msg
-
-type alias NotificationOptions =
-    { ntType : String
-    , title : String
-    , message : String
-    , iconUrl : String
-    , imageUrl : Maybe String
-    }
-
 {- Model -}
 type alias Model = {}
 
@@ -26,13 +15,12 @@ newModel : Model
 newModel = {}
 
 init : () -> (Model, Cmd Msg)
-init _ =
-    Debug.log "Background.elm is inited" (newModel, Cmd.none)
+init _ = 
+    Debug.log "Content.elm is inited" (newModel, Cmd.none)
 
 {- Update -}
 type Msg 
     = NoOp
-    | GetNotofication NotificationOptions
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -41,8 +29,6 @@ update msg model =
         NoOp ->
             (model, Cmd.none)
         {- When a notification item is received from the contents script. -}
-        GetNotofication ntOpt ->
-            (model, createNotification ntOpt)
 
 {- Subscriptions -}
 subscriptions : Model -> Sub Msg
