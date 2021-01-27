@@ -28,7 +28,6 @@ update msg model =
         {- There is nothing to do. -}
         NoOp ->
             (model, Cmd.none)
-        {- When a notification item is received from the contents script. -}
 
 {- Subscriptions -}
 subscriptions : Model -> Sub Msg
