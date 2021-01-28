@@ -1,9 +1,3 @@
-// Initialize the Background.elm program
-let app = Elm.Content.init();
-
-/* 
- * Port functions
- */
 let obs = new MutationObserver((recs) => {
     recs.forEach((rec) => {
         rec.addedNodes.forEach((node) => {
@@ -26,4 +20,4 @@ window.setTimeout(() => {
     };
 
     obs.observe(target, options);
-}, 1000);
+}, 5000);
