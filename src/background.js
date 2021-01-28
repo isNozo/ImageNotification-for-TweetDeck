@@ -1,12 +1,8 @@
 // Initialize the Background.elm program
 let app = Elm.Background.init();
 
-/* 
- * Port functions
- */
+// Create a notification using a data received from the Elm program.
 app.ports.createNotification.subscribe((data) => {
-    console.log(new Date(), data);
-
     let opt = {
         type : data.ntType,
         title : data.title,
@@ -16,4 +12,9 @@ app.ports.createNotification.subscribe((data) => {
     };
 
     chrome.notifications.create(opt, (id) => {});
+});
+
+// Receive the message from the content.js.
+chrome.runtime.onMessage.addListener((msg) => {
+    console.log("recieve:", msg);
 });

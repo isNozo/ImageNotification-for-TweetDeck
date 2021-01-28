@@ -1,17 +1,25 @@
 let obs = new MutationObserver((recs) => {
     recs.forEach((rec) => {
         rec.addedNodes.forEach((node) => {
-            // console.log("node:", node);
-            console.log("title:\n", node.querySelector(".nbfc").innerText);
-            console.log("message:\n", node.querySelector(".js-tweet-text").innerText);
-            console.log("icon:\n", node.querySelector(".tweet-avatar").src);
-            console.log("image:\n", node.querySelector(".js-media-image-link"));
+            // Get a data to create a notification from the added node.
+            let msg = {
+                title: node.querySelector(".nbfc").innerText,
+                message: node.querySelector(".js-tweet-text").innerText,
+                iconUrl: node.querySelector(".tweet-avatar").src,
+                imageUrl: node.querySelector(".js-media-image-link")
+            };
+
+            // Send the message to the background.js.
+            console.log("send msg:", msg);
+            chrome.runtime.sendMessage(msg);
         });
     });
 });
 
-// The TweetDeck content cannot be accessed even if window.onload event is fired, so wait for some second.
+// For the first few seconds, DOMs cannot be accessed even if 
+// the window.onload event is fired, so wait for a while.
 window.setTimeout(() => {
+    // The target is a first column on TweetDeck.
     let target = document.querySelector(".js-chirp-container");
     let options = {
         childList: true,
