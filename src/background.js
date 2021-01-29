@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener((msg) => {
     console.log("recieve:", msg);
 
     let opt = {
-        nTtype : "basic",
+        ntType : "basic",
         title : msg.title,
         message : msg.message,
         iconUrl : "./img/test.png",
