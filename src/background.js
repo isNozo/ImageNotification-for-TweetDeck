@@ -17,4 +17,14 @@ app.ports.createNotification.subscribe((data) => {
 // Receive the message from the content.js.
 chrome.runtime.onMessage.addListener((msg) => {
     console.log("recieve:", msg);
+
+    let opt = {
+        nTtype : "basic",
+        title : msg.title,
+        message : msg.message,
+        iconUrl : "./img/test.png",
+        imageUrl : null
+    }
+
+    app.ports.messageReceiver.send(opt);
 });

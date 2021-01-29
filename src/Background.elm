@@ -10,6 +10,7 @@ main =
 
 {- Ports -}
 port createNotification : NotificationOptions -> Cmd msg
+port messageReceiver : (NotificationOptions -> msg) -> Sub msg
 
 type alias NotificationOptions =
     { ntType : String
@@ -32,7 +33,7 @@ init _ =
 {- Update -}
 type Msg 
     = NoOp
-    | GetNotofication NotificationOptions
+    | GetNotification NotificationOptions
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -41,9 +42,10 @@ update msg model =
         NoOp ->
             (model, Cmd.none)
         {- When a notification item is received from the contents script. -}
-        GetNotofication ntOpt ->
+        GetNotification ntOpt ->
             (model, createNotification ntOpt)
 
 {- Subscriptions -}
 subscriptions : Model -> Sub Msg
-subscriptions _ = Sub.none
+subscriptions _ =
+    messageReceiver GetNotification
