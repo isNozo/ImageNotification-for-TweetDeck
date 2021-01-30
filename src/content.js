@@ -2,11 +2,14 @@ let obs = new MutationObserver((recs) => {
     recs.forEach((rec) => {
         rec.addedNodes.forEach((node) => {
             // Get a data to create a notification from the added node.
+            let imageNode = node.querySelector(".js-media-image-link");
             let msg = {
                 title: node.querySelector(".nbfc").innerText,
                 message: node.querySelector(".js-tweet-text").innerText,
                 iconUrl: node.querySelector(".tweet-avatar").src,
-                imageUrl: node.querySelector(".js-media-image-link")
+                // If the added node contains an image, get the URL of the image.
+                imageUrl: imageNode ? imageNode.style.backgroundImage.match(/\"([^\"]*)\"/)[1]
+                                    : null
             };
 
             // Send the message to the background.js.
