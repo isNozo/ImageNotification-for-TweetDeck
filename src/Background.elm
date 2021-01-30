@@ -1,5 +1,8 @@
 port module Background exposing (..)
 
+import Json.Decode as D
+import Json.Encode as E
+
 main : Program () Model Msg
 main =
     Platform.worker 
@@ -9,8 +12,8 @@ main =
         }
 
 {- Ports -}
-port createNotification : NotificationOptions -> Cmd msg
-port messageReceiver : (NotificationOptions -> msg) -> Sub msg
+port createNotification : E.Value -> Cmd msg
+port messageReceiver : (D.Value -> msg) -> Sub msg
 
 type alias NotificationOptions =
     { ntType : String
@@ -18,6 +21,44 @@ type alias NotificationOptions =
     , message : String
     , iconUrl : String
     , imageUrl : Maybe String
+    }
+
+encodeNotificationOptions : NotificationOptions -> E.Value
+encodeNotificationOptions ntOpt =
+    E.object
+        [ ("type", E.string ntOpt.ntType)
+        , ("title", E.string ntOpt.title)
+        , ("message", E.string ntOpt.message)
+        , ("iconUrl", E.string ntOpt.iconUrl)
+        , ("imageUrl",
+            case ntOpt.imageUrl of
+                Just imageUrl -> E.string imageUrl
+                Nothing       -> E.null
+          )
+        ]
+
+type alias TweetData =
+    { user_name : String
+    , body_text : String
+    , user_iconUrl : String
+    , body_imageUrl : Maybe String
+    }
+
+decoderTweetData : D.Decoder TweetData
+decoderTweetData =
+    D.map4 TweetData
+        (D.field "user_name" D.string)
+        (D.field "body_text" D.string)
+        (D.field "user_iconUrl" D.string)
+        (D.field "body_imageUrl" (D.maybe D.string))
+
+tweetData2notificationOptions : TweetData -> NotificationOptions
+tweetData2notificationOptions tweet_data =
+    { ntType = "basic"
+    , title = tweet_data.user_name
+    , message = tweet_data.body_text
+    , iconUrl = "./img/test.png"
+    , imageUrl = Nothing
     }
 
 {- Model -}
@@ -28,12 +69,12 @@ newModel = {}
 
 init : () -> (Model, Cmd Msg)
 init _ =
-    Debug.log "Background.elm is inited" (newModel, Cmd.none)
+    (newModel, Cmd.none)
 
 {- Update -}
 type Msg 
     = NoOp
-    | GetNotification NotificationOptions
+    | GotTweetData D.Value
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -41,11 +82,19 @@ update msg model =
         {- There is nothing to do. -}
         NoOp ->
             (model, Cmd.none)
-        {- When a notification item is received from the contents script. -}
-        GetNotification ntOpt ->
-            (model, createNotification ntOpt)
+        {- When tweet data is received from the content script. -}
+        GotTweetData tweet_data_json ->
+            case D.decodeValue decoderTweetData tweet_data_json of
+                Ok  tweet_data ->
+                    let
+                        ntOpt = tweetData2notificationOptions tweet_data
+                        ntOpt_json = encodeNotificationOptions ntOpt
+                    in
+                    (model, createNotification ntOpt_json)
+                Err err ->
+                    Debug.log (D.errorToString err) (model, Cmd.none)
 
 {- Subscriptions -}
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    messageReceiver GetNotification
+    messageReceiver GotTweetData

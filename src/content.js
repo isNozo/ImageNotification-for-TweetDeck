@@ -1,20 +1,31 @@
+/* 
+ * This content script runs on the https://tweetdeck.twitter.com
+ * and gets real-time tweets by monitoring DOM changes.
+ */
+
+ // Create a new instance to monitor DOM changes.
 let obs = new MutationObserver((recs) => {
     recs.forEach((rec) => {
-        rec.addedNodes.forEach((node) => {
-            // Get a data to create a notification from the added node.
-            let imageNode = node.querySelector(".js-media-image-link");
-            let msg = {
-                title: node.querySelector(".nbfc").innerText,
-                message: node.querySelector(".js-tweet-text").innerText,
-                iconUrl: node.querySelector(".tweet-avatar").src,
-                // If the added node contains an image, get the URL of the image.
-                imageUrl: imageNode ? imageNode.style.backgroundImage.match(/\"([^\"]*)\"/)[1]
-                                    : null
+        rec.addedNodes.forEach((tweet_node) => {
+            // Get a data to create a notification from the added tweet.
+            let tweet_data = {
+                user_name    : tweet_node.querySelector(".nbfc").innerText,
+                body_text    : tweet_node.querySelector(".js-tweet-text").innerText,
+                user_iconUrl : tweet_node.querySelector(".tweet-avatar").src,
+                body_imageUrl: null
             };
+            
+            // If the tweet contains an image, get the URL of the image.
+            let image_node = tweet_node.querySelector(".js-media-image-link");
+            if (image_node) {
+                // The image_node contains an image URL in the format 'url("<URL>")'.
+                tweet_data.body_imageUrl = image_node.style.backgroundImage
+                                           .match(/\"([^\"]*)\"/)[1];
+            }
 
-            // Send the message to the background.js.
-            console.log("send msg:", msg);
-            chrome.runtime.sendMessage(msg);
+            // Send the tweet_data to the background.js.
+            console.log("send msg:", tweet_data);
+            chrome.runtime.sendMessage(tweet_data);
         });
     });
 });
@@ -30,5 +41,6 @@ window.setTimeout(() => {
         characterData: false
     };
 
+    // Start monitoring changes on the target DOM.
     obs.observe(target, options);
 }, 5000);
