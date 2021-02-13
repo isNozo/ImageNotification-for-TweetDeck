@@ -9,6 +9,7 @@ let obs = new MutationObserver((recs) => {
         rec.addedNodes.forEach((tweet_node) => {
             // Get a data to create a notification from the added tweet.
             let tweet_data = {
+                has_image    : false,
                 user_name    : tweet_node.querySelector(".nbfc").innerText,
                 body_text    : tweet_node.querySelector(".js-tweet-text").innerText,
                 user_iconUrl : tweet_node.querySelector(".tweet-avatar").src,
@@ -18,6 +19,7 @@ let obs = new MutationObserver((recs) => {
             // If the tweet contains an image, get the URL of the image.
             let image_node = tweet_node.querySelector(".js-media-image-link");
             if (image_node) {
+                tweet_data.has_image = true;
                 // The image_node contains an image URL in the format 'url("<URL>")'.
                 tweet_data.body_imageUrl = image_node.style.backgroundImage
                                            .match(/\"([^\"]*)\"/)[1];

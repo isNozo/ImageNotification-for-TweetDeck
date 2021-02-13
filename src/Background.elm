@@ -38,7 +38,8 @@ encodeNotificationOptions ntOpt =
         ]
 
 type alias TweetData =
-    { user_name : String
+    { has_image : Bool
+    , user_name : String
     , body_text : String
     , user_iconUrl : String
     , body_imageUrl : Maybe String
@@ -46,7 +47,8 @@ type alias TweetData =
 
 decoderTweetData : D.Decoder TweetData
 decoderTweetData =
-    D.map4 TweetData
+    D.map5 TweetData
+        (D.field "has_image" D.bool)
         (D.field "user_name" D.string)
         (D.field "body_text" D.string)
         (D.field "user_iconUrl" D.string)
@@ -54,12 +56,20 @@ decoderTweetData =
 
 tweetData2notificationOptions : TweetData -> NotificationOptions
 tweetData2notificationOptions tweet_data =
-    { ntType = "basic"
-    , title = tweet_data.user_name
-    , message = tweet_data.body_text
-    , iconUrl = "./img/test.png"
-    , imageUrl = Nothing
-    }
+    if tweet_data.has_image then
+        { ntType = "image"
+        , title = tweet_data.user_name
+        , message = tweet_data.body_text
+        , iconUrl = "./img/test.png"
+        , imageUrl = Just "./img/test.png"
+        }
+    else
+        { ntType = "basic"
+        , title = tweet_data.user_name
+        , message = tweet_data.body_text
+        , iconUrl = "./img/test.png"
+        , imageUrl = Nothing
+        }
 
 {- Model -}
 type alias Model = {}
