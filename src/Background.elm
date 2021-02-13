@@ -12,26 +12,31 @@ main =
         }
 
 {- Ports -}
-port createNotification : E.Value -> Cmd msg
+port createNotif : E.Value -> Cmd msg
 port messageReceiver : (D.Value -> msg) -> Sub msg
 
-type alias NotificationOptions =
-    { ntType : String
+type NotifType = Basic | Image
+type alias NotifOptions =
+    { notifType : NotifType
     , title : String
     , message : String
     , iconUrl : String
     , imageUrl : Maybe String
     }
 
-encodeNotificationOptions : NotificationOptions -> E.Value
-encodeNotificationOptions ntOpt =
+encodeNotifOptions : NotifOptions -> E.Value
+encodeNotifOptions opt =
     E.object
-        [ ("type", E.string ntOpt.ntType)
-        , ("title", E.string ntOpt.title)
-        , ("message", E.string ntOpt.message)
-        , ("iconUrl", E.string ntOpt.iconUrl)
+        [ ("type",
+            case opt.notifType of
+                Basic -> E.string "basic"
+                Image -> E.string "image"
+          )
+        , ("title", E.string opt.title)
+        , ("message", E.string opt.message)
+        , ("iconUrl", E.string opt.iconUrl)
         , ("imageUrl",
-            case ntOpt.imageUrl of
+            case opt.imageUrl of
                 Just imageUrl -> E.string imageUrl
                 Nothing       -> E.null
           )
@@ -54,19 +59,19 @@ decoderTweetData =
         (D.field "user_iconUrl" D.string)
         (D.field "body_imageUrl" (D.maybe D.string))
 
-tweetData2notificationOptions : TweetData -> NotificationOptions
-tweetData2notificationOptions tweet_data =
-    if tweet_data.has_image then
-        { ntType = "image"
-        , title = tweet_data.user_name
-        , message = tweet_data.body_text
+tweetData2NotifOptions : TweetData -> NotifOptions
+tweetData2NotifOptions tweetData =
+    if tweetData.has_image then
+        { notifType = Image
+        , title = tweetData.user_name
+        , message = tweetData.body_text
         , iconUrl = "./img/test.png"
         , imageUrl = Just "./img/test.png"
         }
     else
-        { ntType = "basic"
-        , title = tweet_data.user_name
-        , message = tweet_data.body_text
+        { notifType = Basic
+        , title = tweetData.user_name
+        , message = tweetData.body_text
         , iconUrl = "./img/test.png"
         , imageUrl = Nothing
         }
@@ -93,14 +98,16 @@ update msg model =
         NoOp ->
             (model, Cmd.none)
         {- When tweet data is received from the content script. -}
-        GotTweetData tweet_data_json ->
-            case D.decodeValue decoderTweetData tweet_data_json of
-                Ok  tweet_data ->
+        GotTweetData tweetDataJson ->
+            case D.decodeValue decoderTweetData tweetDataJson of
+                Ok  tweetData ->
                     let
-                        ntOpt = tweetData2notificationOptions tweet_data
-                        ntOpt_json = encodeNotificationOptions ntOpt
+                        cmd = tweetData
+                            |> tweetData2NotifOptions
+                            |> encodeNotifOptions
+                            |> createNotif
                     in
-                    (model, createNotification ntOpt_json)
+                    (model, cmd)
                 Err err ->
                     Debug.log (D.errorToString err) (model, Cmd.none)
 

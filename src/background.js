@@ -2,7 +2,7 @@
 let app = Elm.Background.init();
 
 // Port: Create the notification.
-app.ports.createNotification.subscribe((opt) => {
+app.ports.createNotif.subscribe((opt) => {
     chrome.notifications.create(opt, (id) => {});
 });
 
